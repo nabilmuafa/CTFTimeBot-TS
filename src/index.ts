@@ -2,7 +2,6 @@ import { ctf } from "./commands/ctf.js";
 import { help } from "./commands/help.js";
 import { InteractionType, InteractionResponseType } from "discord-api-types/v10";
 
-// Map commands for easy lookup
 const commands = new Map();
 commands.set(ctf.data.name, ctf);
 commands.set(help.data.name, help);
@@ -13,7 +12,6 @@ export interface Env {
 	DISCORD_TOKEN: string;
 }
 
-// --- NATIVE VERIFICATION (No discord-interactions dependency) ---
 async function verifyDiscordRequest(request: Request, env: Env) {
 	const signature = request.headers.get('x-signature-ed25519');
 	const timestamp = request.headers.get('x-signature-timestamp');
@@ -25,10 +23,8 @@ async function verifyDiscordRequest(request: Request, env: Env) {
 
 	const hexKey = env.DISCORD_PUBLIC_KEY;
 
-	// Convert hex key to binary
 	const keyBytes = new Uint8Array(hexKey.match(/.{1,2}/g)!.map((byte) => parseInt(byte, 16)));
 
-	// Import the key for verification
 	const key = await crypto.subtle.importKey(
 		'raw',
 		keyBytes,
@@ -53,7 +49,6 @@ async function verifyDiscordRequest(request: Request, env: Env) {
 
 export default {
 	async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
-		// 1. Verify the request comes from Discord
 		if (request.method === "POST") {
 			const { isValid, interaction } = await verifyDiscordRequest(request, env);
 
@@ -61,16 +56,13 @@ export default {
 				return new Response("Bad request signature", { status: 401 });
 			}
 
-			// 2. Handle Interaction Types
 			if (interaction.type === InteractionType.Ping) {
-				// Discord ping (health check)
 				return new Response(JSON.stringify({ type: InteractionResponseType.Pong }), {
 					headers: { "Content-Type": "application/json" },
 				});
 			}
 
 			if (interaction.type === InteractionType.ApplicationCommand) {
-				// Slash Command
 				const commandName = interaction.data.name;
 				const command = commands.get(commandName);
 
@@ -87,7 +79,7 @@ export default {
 								type: InteractionResponseType.ChannelMessageWithSource,
 								data: {
 									content: "An error occurred while executing the command.",
-									flags: 64, // Ephemeral
+									flags: 64,
 								},
 							}),
 							{ headers: { "Content-Type": "application/json" } }

@@ -15,8 +15,6 @@ async function deploy() {
   try {
     console.log("Deploying slash commands...");
 
-    // This registers commands globally. It might take ~1 hour to cache.
-    // For instant testing, you can use: .applicationGuildCommands(CLIENT_ID, "YOUR_GUILD_ID")
     await rest.put(Routes.applicationCommands(CLIENT_ID), {
       body: commands,
     });
