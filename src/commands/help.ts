@@ -1,4 +1,5 @@
-import { SlashCommandBuilder, EmbedBuilder } from "discord.js";
+import { SlashCommandBuilder, EmbedBuilder } from "@discordjs/builders";
+import { InteractionResponseType } from "discord-interactions";
 
 export const help = {
   data: new SlashCommandBuilder()
@@ -16,6 +17,11 @@ export const help = {
         ].join("\n")
       );
 
-    await interaction.reply({ embeds: [embed] });
+    return {
+      type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+      data: {
+        embeds: [embed.toJSON()],
+      },
+    };
   },
 };

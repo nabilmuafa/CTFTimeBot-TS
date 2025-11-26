@@ -1,22 +1,22 @@
 {
   "name": "ctftime-bot-discord",
   "type": "module",
+  "main": "src/index.ts",
   "scripts": {
-    "start": "node dist/index.js",
-    "dev": "tsx src/index.ts",
-    "deploy": "tsx src/deploy-commands.ts"
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "register": "tsx src/deploy-commands.ts"
   },
   "dependencies": {
-    "discord.js": "^14.17.0",
-    "dotenv": "^16.0.0",
-    "node-fetch": "^3.3.2",
-    "pino": "^10.1.0",
-    "pino-pretty": "^13.1.2"
+    "@discordjs/builders": "^1.13.0",
+    "@discordjs/collection": "^2.1.1",
+    "@discordjs/rest": "^2.6.0",
+    "discord-api-types": "^0.38.34",
+    "discord-interactions": "^4.4.0"
   },
   "devDependencies": {
-    "@types/node": "^20.10.0",
-    "ts-node": "^10.9.2",
-    "ts-node-dev": "^2.0.0",
+    "@cloudflare/workers-types": "^4.20240603.0",
+    "dotenv": "^16.4.1",
     "tsx": "^4.20.6",
     "typescript": "^5.2.0",
     "wrangler": "^4.50.0"

@@ -1,11 +1,11 @@
 import "dotenv/config";
-import { REST, Routes } from "discord.js";
+import { REST } from "@discordjs/rest";
+import { Routes } from "discord-api-types/v10";
 import { ctf } from "./commands/ctf.js";
 import { help } from "./commands/help.js";
 
 const TOKEN = process.env.DISCORD_TOKEN!;
-const CLIENT_ID = process.env.DISCORD_CLIENT_ID!;
-const GUILD_ID = process.env.DISCORD_GUILD_ID!;
+const CLIENT_ID = process.env.DISCORD_APPLICATION_ID!;
 
 const rest = new REST({ version: "10" }).setToken(TOKEN);
 
@@ -14,12 +14,16 @@ async function deploy() {
 
   try {
     console.log("Deploying slash commands...");
-    await rest.put(Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID), {
+
+    // This registers commands globally. It might take ~1 hour to cache.
+    // For instant testing, you can use: .applicationGuildCommands(CLIENT_ID, "YOUR_GUILD_ID")
+    await rest.put(Routes.applicationCommands(CLIENT_ID), {
       body: commands,
     });
-    console.log("Done.");
+
+    console.log("Done! Commands registered.");
   } catch (err) {
-    console.error(err);
+    console.error("Error registering commands:", err);
   }
 }
 

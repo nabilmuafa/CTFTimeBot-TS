@@ -1,5 +1,5 @@
-import { SlashCommandBuilder, EmbedBuilder } from "discord.js";
-import fetch from "node-fetch";
+import { SlashCommandBuilder, EmbedBuilder } from "@discordjs/builders";
+import { InteractionResponseType } from "discord-interactions";
 
 export const ctf = {
   data: new SlashCommandBuilder()
@@ -10,10 +10,14 @@ export const ctf = {
     const now = Math.floor(Date.now() / 1000);
     const url = `https://ctftime.org/api/v1/events/?limit=7&start=${now}&finish=${now + 604800}`;
 
-    const res = await fetch(url);
-    const data = await res.json();
+    const res = await fetch(url, {
+      headers: {
+        'User-Agent': 'DiscordBot (https://github.com/your/repo, 1.0)'
+      }
+    });
+    const data: any = await res.json();
 
-    const embeds: EmbedBuilder[] = [];
+    const embeds: any[] = [];
 
     if (res.ok) {
       const FMT: Intl.DateTimeFormatOptions = {
@@ -21,11 +25,10 @@ export const ctf = {
         timeStyle: "short",
       };
 
-      for (const ctf of data) {
-        const start = new Date(ctf.start);
-        const end = new Date(ctf.finish);
+      for (const event of data) {
+        const start = new Date(event.start);
+        const end = new Date(event.finish);
 
-        // WIB = UTC+7
         const startWIB = new Date(start.getTime() + 7 * 60 * 60 * 1000);
         const endWIB = new Date(end.getTime() + 7 * 60 * 60 * 1000);
 
@@ -34,30 +37,33 @@ export const ctf = {
           `${endWIB.toLocaleString("en-US", FMT)} WIB`;
 
         const embed = new EmbedBuilder()
-          .setTitle(ctf.title)
-          .setURL(ctf.ctftime_url)
-          .setDescription(ctf.description || null)
+          .setTitle(event.title)
+          .setURL(event.ctftime_url)
+          .setDescription(event.description || "No description")
           .setFooter({ text: ctfDate })
           .addFields(
-            { name: "Format", value: ctf.format || "-" },
-            { name: "Weight", value: String(ctf.weight) },
+            { name: "Format", value: event.format || "-", inline: true },
+            { name: "Weight", value: String(event.weight), inline: true },
             {
               name: "Prize",
-              value: ctf.prizes ? String(ctf.prizes) : "Pengalaman",
+              value: event.prizes ? String(event.prizes).substring(0, 1024) : "Pengalaman",
               inline: false,
             }
-          )
+          );
 
-        if (ctf.logo) {
-          embed.setThumbnail(ctf.logo);
+        if (event.logo) {
+          embed.setThumbnail(event.logo);
         }
 
-        embeds.push(
-          embed
-        );
+        embeds.push(embed.toJSON());
       }
     }
 
-    await interaction.reply({ embeds });
+    return {
+      type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+      data: {
+        embeds: embeds,
+      },
+    };
   },
 };
